@@ -22,6 +22,7 @@ from threading import Thread,Event
 from multiprocessing import Process
 import multiprocessing
 import time
+import sqlite3
 
 
 
@@ -121,6 +122,11 @@ Builder.load_string("""
     Label:
         text:"Enter Credentials"
         pos:0,200
+    Label:
+        markup:True
+        text:"[ref=first ref]Forgot Password?[/ref]"
+        on_ref_press: root.forgot()
+        
     Button:         
         text: 'BACK TO LOGIN PAGE'
         size_hint: (.3,.1)
@@ -132,6 +138,11 @@ Builder.load_string("""
             root.manager.current = 'login'    
     
 <account>:
+    first_name_text_input:name
+    last_name_text_input:name
+    create_password_text_input:password
+    confirm_password_text_input:password
+    confirm_email_text_input:email
     Label:
         text: "Provide Details"
         pos:0,200
@@ -157,13 +168,26 @@ Builder.load_string("""
             font_size:15
             id:name
             auto_dismiss: False
+            
     Label:
-        text:"Create Password"
-        pos:-200,55
+        text:"Email-id"
+        pos:-180,54
         font_size:20
         TextInput:
             multiline:False
             pos:280,340
+            size:300,28
+            font_size:15
+            id:email
+            auto_dismiss: False
+            
+    Label:
+        text:"Create Password"
+        pos:-200,13
+        font_size:20
+        TextInput:
+            multiline:False
+            pos:280,300
             size:300,25
             font_size:10
             id:password
@@ -171,11 +195,11 @@ Builder.load_string("""
             
     Label:
         text:"Confirm Password"
-        pos:-210,15
+        pos:-210,-27
         font_size:20
         TextInput:
             multiline:False
-            pos:280,300
+            pos:280,260
             size:300,25
             font_size:10
             id:password 
@@ -185,10 +209,9 @@ Builder.load_string("""
         size_hint: (.3,.1)
         pos:(280,180)
         width: 200
-        on_press: 
-            root.manager.transition.direction = 'left' 
-            root.manager.transition.duration = 1 
-            root.manager.current = 'confirmation'   
+        on_press: root.make()
+            
+            
     Button:         
         text: 'BACK TO REGISTER PAGE'
         size_hint: (.3,.1)
@@ -323,7 +346,7 @@ class register(Screen):
         
             
         self.lbl.text='OTP is not valid anymore'
-        self.parent.current='register'
+        
     
     def press(self):
         timer = threading.Timer(1.0, self.auth) 
@@ -344,9 +367,32 @@ class register(Screen):
 class details(Screen):
     pass
     
+        
+   
+    
 class account(Screen):
     pass
+    def make(self):
+        self.first_name=self.first_name_text_input.text
+        self.last_name=self.last_name_text_input.text
+        self.create_password=self.create_password_text_input.text
+        self.confirm_password=self.confirm_password_text_input.text
+        self.confirm_email=self.confirm_email_text_input.text
+        start=sqlite3.connect('user_details.db')
+        start.execute("DROP TABLE USERS;")
+        start.execute('''CREATE TABLE IF NOT EXISTS USERS(EMAIL_ID TEXT PRIMARY KEY,FIRST_NAME TEXT,LAST_NAME TEXT,PASSWORD TEXT)''')
+        start.execute("INSERT INTO USERS (EMAIL_ID,FIRST_NAME, LAST_NAME, PASSWORD) VALUES(?, ?, ?, ?)", (self.confirm_email,self.first_name, self.last_name,self.create_password))
+        start.commit()
+        print('Inserted successfully')
+        start.close()
+        Clock.schedule_once(self.changeScreen,1)
+    
 
+    def changeScreen(self, *args):
+        self.parent.current='confirmation'
+        
+        
+        
 class confirmation(Screen):
     pass
     def __init__(self,**kwargs):
