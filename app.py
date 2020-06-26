@@ -120,14 +120,52 @@ Builder.load_string("""
         on_press: root.press()   
         on_press: root.afterpress()
 <details>:
+    last_email_text_input: email
+    last_password_text_input: password
+    lbl:my_label
     Label:
         text:"Enter Credentials"
         pos:0,200
+        
+    Label:
+        id: my_label
+        color: [1, 0, 0, 1] 
     Label:
         markup:True
         text:"[ref=first ref]Forgot Password?[/ref]"
+        pos:200,50
         on_ref_press: root.forgot()
-        
+    Label:
+        text:"Enter Registered Email"
+        pos:-230,150
+        font_size:20
+        TextInput:
+            multiline:False
+            pos:280,435
+            size:300,30
+            font_size:15
+            id:email
+            auto_dismiss: False
+
+    Label:
+        text:"Enter password"
+        pos:-200,95
+        font_size:20
+        TextInput:
+            multiline:False
+            pos:280,380
+            size:300,30
+            font_size:15
+            id:password
+            auto_dismiss: False
+    Button:
+        text: 'LOGIN'
+        size_hint: (.3,.1)
+        pos:(280,180)
+        width: 200
+        on_press: root.credentials()      
+            
+            
     Button:         
         text: 'BACK TO LOGIN PAGE'
         size_hint: (.3,.1)
@@ -236,7 +274,12 @@ Builder.load_string("""
 <intro>:
     Label:
         text: "Start from here"
-        pos:0,200   
+        pos:0,200  
+
+<reset>:
+    Label:
+        text:"Reset your password"
+        pos:0,200
 """)
     
 
@@ -373,8 +416,29 @@ class register(Screen):
 class details(Screen):
     pass
     
+    def forgot(self):
+        Clock.schedule_once(self.changeScreen,1)
         
-   
+    def changeScreen(self,*args):
+        self.parent.current='reset'
+    
+    def entry(self,*args):
+        self.parent.current='intro'
+    
+    def credentials(self):
+        self.email=self.last_email_text_input.text
+        self.password=self.last_password_text_input.text
+        start=sqlite3.connect("user_details.db")
+        cursor=start.execute("SELECT EMAIL_ID,PASSWORD FROM USERS")
+        for row in cursor:
+            print("email id-",row[0])
+            print("password-",row[1])
+            
+        if self.email==row[0] and self.password==row[1]:
+            
+            Clock.schedule_once(self.entry,1)
+        else:
+            self.lbl.text='Enter correct credentials'
     
 class account(Screen):
     pass
@@ -459,11 +523,15 @@ class confirmation(Screen):
         Clock.schedule_once(self.changeScreen, 1.7)
     def changeScreen(self, *args):
         #now switch to the screen next
-        self.parent.current = "intro"
+        self.parent.current = "details"
     
 class intro(Screen):
     pass
-    
+
+class reset(Screen):
+    pass
+
+
 sm=ScreenManager()
 sm.add_widget(start(name ="start")) 
 sm.add_widget(login(name ="login")) 
@@ -472,6 +540,7 @@ sm.add_widget(details(name="details"))
 sm.add_widget(account(name="account"))
 sm.add_widget(confirmation(name="confirmation"))
 sm.add_widget(intro(name="intro"))
+sm.add_widget(reset(name="reset"))
 
 
 class App(App):
