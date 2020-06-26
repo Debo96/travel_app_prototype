@@ -28,6 +28,7 @@ import sqlite3
 
 
 
+
 Builder.load_string(""" 
 <start>:
     Label:
@@ -143,6 +144,11 @@ Builder.load_string("""
     create_password_text_input:password
     confirm_password_text_input:password
     confirm_email_text_input:email
+    lbl:my_label
+    Label: 
+        id: my_label
+        color: [1, 0, 0, 1]
+        pos:245,55
     Label:
         text: "Provide Details"
         pos:0,200
@@ -209,7 +215,7 @@ Builder.load_string("""
         size_hint: (.3,.1)
         pos:(280,180)
         width: 200
-        on_press: root.make()
+        on_press: root.finish()
             
             
     Button:         
@@ -386,12 +392,58 @@ class account(Screen):
         print('Inserted successfully')
         start.close()
         Clock.schedule_once(self.changeScreen,1)
-    
+        
 
     def changeScreen(self, *args):
         self.parent.current='confirmation'
+    
+    def finish(self):
+        self.first_name=self.first_name_text_input.text
+        self.last_name=self.last_name_text_input.text
+        self.create_password=self.create_password_text_input.text
+        self.confirm_password=self.confirm_password_text_input.text
+        self.confirm_email=self.confirm_email_text_input.text
+        self.email=self.confirm_email
+        self.password=self.create_password
+        self.confirmed=self.confirm_password
+        password=self.password
+        confirmed=self.confirmed
+            
+        if (self.password_check(password,confirmed) and '@' in self.email):
+            self.make()
+            
+  
         
+        else:
+            self.lbl.text='Check email and password once again'
+           
+           
+            
         
+    
+    
+    def password_check(self,password,confirmed):
+        SpecialSym =['$', '@', '#', '%'] 
+        val = True
+        
+        if len(password)<6:
+            val=False
+        if len(password)>15:
+            val=False
+        if not any(char.isdigit() for char in password): 
+            val=False
+        if not any(char.isupper() for char in password):
+            val=False
+        if not any(char.islower() for char in password):
+            val=False
+        if not any(char in SpecialSym for char in password):
+            val=False
+        if password!=confirmed:
+            val=False
+        if val:
+            return val
+        
+     
         
 class confirmation(Screen):
     pass
