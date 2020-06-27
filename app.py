@@ -23,6 +23,7 @@ from multiprocessing import Process
 import multiprocessing
 import time
 import sqlite3
+import re
 
 
 
@@ -180,7 +181,7 @@ Builder.load_string("""
     first_name_text_input:name
     last_name_text_input:name
     create_password_text_input:password
-    confirm_password_text_input:password
+    confirm_password_text_input:pswd
     confirm_email_text_input:email
     lbl:my_label
     Label: 
@@ -246,7 +247,7 @@ Builder.load_string("""
             pos:280,260
             size:300,25
             font_size:10
-            id:password 
+            id:pswd 
             auto_dismiss: False
     Button:         
         text: 'FINISH CREATING ACCOUNT'
@@ -472,11 +473,21 @@ class account(Screen):
         self.confirmed=self.confirm_password
         password=self.password
         confirmed=self.confirmed
+        
+        print(password)
+        print(confirmed)
+                    
+        if (self.password_check(password) and '@' in self.email and password==confirmed):
             
-        if (self.password_check(password,confirmed) and '@' in self.email):
-            self.make()
             
-  
+            self.make() 
+            
+                
+       
+                                           
+        
+            
+        
         
         else:
             self.lbl.text='Check email and password once again'
@@ -486,28 +497,34 @@ class account(Screen):
         
     
     
-    def password_check(self,password,confirmed):
+    def password_check(self,password):
         SpecialSym =['$', '@', '#', '%'] 
-        val = True
+        val=True
         
         if len(password)<6:
             val=False
+            
         if len(password)>15:
             val=False
+           
         if not any(char.isdigit() for char in password): 
             val=False
+            
         if not any(char.isupper() for char in password):
             val=False
+            
         if not any(char.islower() for char in password):
             val=False
+            
         if not any(char in SpecialSym for char in password):
             val=False
-        if password!=confirmed:
-            val=False
+        
+        
         if val:
             return val
         
-     
+    
+        
         
 class confirmation(Screen):
     pass
