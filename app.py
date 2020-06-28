@@ -23,7 +23,8 @@ from multiprocessing import Process
 import multiprocessing
 import time
 import sqlite3
-import re
+
+
 
 
 
@@ -63,6 +64,7 @@ Builder.load_string("""
             root.manager.transition.duration = 1 
             root.manager.current = 'register'
 <register>:
+    id: register
     last_email_text_input: email
     last_otp_text_input: OTP
     lbl:my_label
@@ -120,6 +122,7 @@ Builder.load_string("""
         width: 200
         on_press: root.press()   
         on_press: root.afterpress()
+        
 <details>:
     last_email_text_input: email
     last_password_text_input: password
@@ -178,11 +181,12 @@ Builder.load_string("""
             root.manager.current = 'login'    
     
 <account>:
+    id:account
     first_name_text_input:name
     last_name_text_input:name
     create_password_text_input:password
     confirm_password_text_input:pswd
-    confirm_email_text_input:email
+    confirmed_email_text_input:conf_email
     lbl:my_label
     Label: 
         id: my_label
@@ -215,7 +219,7 @@ Builder.load_string("""
             auto_dismiss: False
             
     Label:
-        text:"Email-id"
+        text:"Enter E-mail"
         pos:-180,54
         font_size:20
         TextInput:
@@ -223,7 +227,7 @@ Builder.load_string("""
             pos:280,340
             size:300,28
             font_size:15
-            id:email
+            id:conf_email
             auto_dismiss: False
             
     Label:
@@ -281,6 +285,9 @@ Builder.load_string("""
     Label:
         text:"Reset your password"
         pos:0,200
+ 
+
+     
 """)
     
 
@@ -311,11 +318,13 @@ class register(Screen):
         super(register, self).__init__(**kwargs)
         
     def verify(self):
-        self.email=self.last_email_text_input.text
+        global mail
+        mail=self.last_email_text_input.text
         self.generate_pass = ''.join([random.choice( string.ascii_uppercase +string.ascii_lowercase + string.digits)  for n in range(10)])
-        if '@' in self.email:
+        
+        if '@' in mail:
             fromaddr = "babipaul135@gmail.com"
-            toaddr = self.email
+            toaddr = mail
             msg = MIMEMultipart() 
             msg['From'] = fromaddr 
             msg['To'] = toaddr 
@@ -399,10 +408,13 @@ class register(Screen):
         
     
     def press(self):
+       
         timer = threading.Timer(1.0, self.auth) 
         timer.start()
         if self.lbl.text=='OTP is not valid anymore':
             timer.cancel()
+         
+        
         
     def afterpress(self):
         timer = threading.Timer(25.0,self.invalid)
@@ -443,12 +455,15 @@ class details(Screen):
     
 class account(Screen):
     pass
+    
+        
+    
     def make(self):
         self.first_name=self.first_name_text_input.text
         self.last_name=self.last_name_text_input.text
         self.create_password=self.create_password_text_input.text
         self.confirm_password=self.confirm_password_text_input.text
-        self.confirm_email=self.confirm_email_text_input.text
+        self.confirm_email=self.confirmed_email_text_input.text
         start=sqlite3.connect('user_details.db')
         start.execute("DROP TABLE USERS;")
         start.execute('''CREATE TABLE IF NOT EXISTS USERS(EMAIL_ID TEXT PRIMARY KEY,FIRST_NAME TEXT,LAST_NAME TEXT,PASSWORD TEXT)''')
@@ -463,21 +478,23 @@ class account(Screen):
         self.parent.current='confirmation'
     
     def finish(self):
+        global mail
         self.first_name=self.first_name_text_input.text
         self.last_name=self.last_name_text_input.text
         self.create_password=self.create_password_text_input.text
         self.confirm_password=self.confirm_password_text_input.text
-        self.confirm_email=self.confirm_email_text_input.text
-        self.email=self.confirm_email
+        self.confirmed_email_text_input.text=f"{mail}"
         self.password=self.create_password
         self.confirmed=self.confirm_password
+        email=self.confirmed_email_text_input.text
         password=self.password
         confirmed=self.confirmed
         
         print(password)
         print(confirmed)
-                    
-        if (self.password_check(password) and '@' in self.email and password==confirmed):
+        
+       
+        if (self.password_check(password) and '@' in email and password==confirmed):
             
             
             self.make() 
@@ -563,7 +580,7 @@ sm.add_widget(reset(name="reset"))
 class App(App):
     def build(self):
         return sm
-    
+        
         
 App().run()
  
