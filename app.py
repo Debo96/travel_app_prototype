@@ -241,6 +241,7 @@ Builder.load_string("""
             font_size:10
             id:password
             auto_dismiss: False
+            password: True
             
     Label:
         text:"Confirm Password"
@@ -253,6 +254,7 @@ Builder.load_string("""
             font_size:10
             id:pswd 
             auto_dismiss: False
+            password:True
     Button:         
         text: 'FINISH CREATING ACCOUNT'
         size_hint: (.3,.1)
