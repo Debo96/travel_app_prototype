@@ -162,6 +162,7 @@ Builder.load_string("""
             font_size:15
             id:password
             auto_dismiss: False
+            password: True
     Button:
         text: 'LOGIN'
         size_hint: (.3,.1)
@@ -284,11 +285,61 @@ Builder.load_string("""
         pos:0,200  
 
 <reset>:
+    last_email_text_input: email
+    last_password_text_input:password
+    last_new_text_input:passwrd
+    lbl: my_label
+    Label:
+        id: my_label
+        color: [1, 0, 0, 1] 
+    
     Label:
         text:"Reset your password"
         pos:0,200
- 
-
+    Label:
+        text:"Enter Registered Email"
+        pos:-230,150
+        font_size:20
+        TextInput:
+            multiline:False
+            pos:280,435
+            size:300,30
+            font_size:15
+            id:email
+            auto_dismiss: False
+            
+    Label:
+        text:"Enter old password"
+        pos:-220,95
+        font_size:20
+        TextInput:
+            multiline:False
+            pos:280,380
+            size:300,30
+            font_size:15
+            id:password
+            auto_dismiss: False
+            
+    
+    Label:
+        text:"Enter new password"
+        pos:-220,55
+        font_size:20
+        TextInput:
+            multiline:False
+            pos:280,338
+            size:300,30
+            font_size:15
+            id:passwrd
+            auto_dismiss: False
+        
+    Button:         
+        text: 'UPDATE PASSWORD AND CONTINUE'
+        size_hint: (.4,.1)
+        pos:(270,180)
+        width: 200
+        on_press: root.update()
+        
      
 """)
     
@@ -566,7 +617,22 @@ class intro(Screen):
 
 class reset(Screen):
     pass
-
+    
+    def update(self):
+        self.email=self.last_email_text_input.text
+        self.password=self.last_password_text_input.text
+        self.new=self.last_new_text_input.text
+        start=sqlite3.connect('user_details.db')
+        start.execute('''UPDATE USERS SET PASSWORD = ? WHERE EMAIL_ID = ?''', (self.new, self.email))
+        start.commit()
+        print(start.total_changes)
+        cursor= start.execute("SELECT EMAIL_ID, PASSWORD from USERS")
+        for row in cursor:
+            print ("EMAIL-ID-", row[0])
+            print ("PASSWORD-", row[1])
+        start.close()
+        
+    
 
 sm=ScreenManager()
 sm.add_widget(start(name ="start")) 
