@@ -338,7 +338,7 @@ Builder.load_string("""
         size_hint: (.4,.1)
         pos:(270,180)
         width: 200
-        on_press: root.update()
+        on_press: root.passwrd_update()
         
      
 """)
@@ -631,8 +631,65 @@ class reset(Screen):
             print ("EMAIL-ID-", row[0])
             print ("PASSWORD-", row[1])
         start.close()
+       
+        
+        
+    def passwrd_update(self):
+        self.email=self.last_email_text_input.text
+        self.password=self.last_password_text_input.text
+        self.new=self.last_new_text_input.text
+        password=self.new
+        start=sqlite3.connect('user_details.db')
+        cursor_1=start.execute("SELECT EMAIL_ID, PASSWORD FROM USERS")
+        for row in cursor_1:
+            print ("EMAIL-ID-", row[0])
+            print ("OLD-PASSWORD-", row[1])
+            
+        start.close()
+        
+        if self.password==row[1] and self.email==row[0] and self.password_check(password):
+            self.update()
+            Clock.schedule_once(self.changeScreen,1)
+            
+        else:
+            self.lbl.text='Enter correct old credentials'
+            
+    
+    def password_check(self,password):
+        
+        SpecialSym =['$', '@', '#', '%'] 
+        val=True
+        
+        if len(password)<6:
+            val=False
+            
+        if len(password)>15:
+            val=False
+           
+        if not any(char.isdigit() for char in password): 
+            val=False
+            
+        if not any(char.isupper() for char in password):
+            val=False
+            
+        if not any(char.islower() for char in password):
+            val=False
+            
+        if not any(char in SpecialSym for char in password):
+            val=False
+        
+        
+        if val:
+            return val
+    
+        
+    def changeScreen(self, *args):
+        self.parent.current='login'
         
     
+
+
+        
 
 sm=ScreenManager()
 sm.add_widget(start(name ="start")) 
