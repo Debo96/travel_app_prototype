@@ -23,6 +23,7 @@ from multiprocessing import Process
 import multiprocessing
 import time
 import sqlite3
+import datetime
 
 
 
@@ -35,6 +36,9 @@ Builder.load_string("""
 <start>:
     Label:
         text:"Hello"
+        
+    
+        
         
         
                       
@@ -136,7 +140,7 @@ Builder.load_string("""
         color: [1, 0, 0, 1] 
     Label:
         markup:True
-        text:"[ref=first ref]Forgot Password?[/ref]"
+        text:"[ref=first ref]Reset Password?[/ref]"
         pos:200,50
         on_ref_press: root.forgot()
     Label:
@@ -280,9 +284,12 @@ Builder.load_string("""
         pos:0,200
 
 <intro>:
+    lbl:label
     Label:
+        id:label
         text: "Start from here"
-        pos:0,200  
+        pos:0,200
+        
 
 <reset>:
     last_email_text_input: email
@@ -339,27 +346,55 @@ Builder.load_string("""
         pos:(270,180)
         width: 200
         on_press: root.passwrd_update()
-        
+
+
+         
      
 """)
     
 
 class start(Screen):
     pass
-    def __init__(self,**kwargs):
+    
+    def __init__(self, **kwargs):
+       
         super(start, self).__init__(**kwargs)
-
-    #this is event that is fired when the screen is displayed.
-    def on_enter(self, *args):
-        self.displayScreenThenLeave()
-
+    
+    
     def displayScreenThenLeave(self):
         #schedued after 3 seconds
         Clock.schedule_once(self.changeScreen, 1.7)
     def changeScreen(self, *args):
         #now switch to the screen next
         self.parent.current = "login"
+        
+    def changeScreen1(self, *args):
+        self.parent.current='intro'
+        
     
+    def on_enter(self, *args):
+        
+        start=sqlite3.connect('user_details.db')
+        cursor=start.execute('SELECT EMAIL_ID, PASSWORD from USERS')
+        for row in cursor:
+            print("email-id-" ,row[0])
+            print("password-" ,row[1])
+        
+        if row[0]:
+            Clock.schedule_once(self.changeScreen1,1.7)
+            
+        else:
+            self.displayScreenThenLeave()
+   
+        
+    
+        
+    
+        
+
+        
+
+
 class login(Screen):
     pass
     
@@ -505,8 +540,15 @@ class details(Screen):
             Clock.schedule_once(self.entry,1)
         else:
             self.lbl.text='Enter correct credentials'
+            
+        
+   
+        
+    
+        
     
 class account(Screen):
+    
     pass
     
         
@@ -614,6 +656,9 @@ class confirmation(Screen):
     
 class intro(Screen):
     pass
+    
+    
+    
 
 class reset(Screen):
     pass
@@ -686,9 +731,11 @@ class reset(Screen):
     def changeScreen(self, *args):
         self.parent.current='login'
         
+        
     
-
-
+        
+        
+        
         
 
 sm=ScreenManager()
